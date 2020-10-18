@@ -124,56 +124,6 @@ class MPlayerListener : public MediaPlayerListener
     }
 };
 
-static unsigned long getFreeMemory(void)
-{
-    int fd = open("/proc/meminfo", O_RDONLY);
-    const char* const sums[] = { "MemFree:", "Cached:", NULL };
-    const size_t sumsLen[] = { strlen("MemFree:"), strlen("Cached:"), 0 };
-    unsigned int num = 2;
-
-    if (fd < 0) {
-        ALOGW("Unable to open /proc/meminfo");
-        return -1;
-    }
-
-    char buffer[256];
-    const int len = read(fd, buffer, sizeof(buffer)-1);
-    close(fd);
-
-    if (len < 0) {
-        ALOGW("Unable to read /proc/meminfo");
-        return -1;
-    }
-    buffer[len] = 0;
-
-    size_t numFound = 0;
-    unsigned long mem = 0;
-
-    char* p = buffer;
-    while (*p && numFound < num) {
-        int i = 0;
-        while (sums[i]) {
-            if (strncmp(p, sums[i], sumsLen[i]) == 0) {
-                p += sumsLen[i];
-                while (*p == ' ') p++;
-                char* num = p;
-                while (*p >= '0' && *p <= '9') p++;
-                if (*p != 0) {
-                    *p = 0;
-                    p++;
-                    if (*p == 0) p--;
-                }
-                mem += atoll(num);
-                numFound++;
-                break;
-            }
-            i++;
-        }
-        p++;
-    }
-
-    return numFound > 0 ? mem : -1;
-}
 
 BootAnimation::BootAnimation() : Thread(false), mZip(NULL)
 {
